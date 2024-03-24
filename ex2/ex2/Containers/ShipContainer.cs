@@ -1,6 +1,8 @@
+using ex2.Exceptions;
 using ex2.utils;
+using ex2.Cargos;
 
-namespace ex2;
+namespace ex2.Containers;
 
 public class ShipContainer
 {
@@ -8,36 +10,58 @@ public class ShipContainer
     private double _ownMass;
     private double _depth;
     private string _serialNumber;
-    private double _maxMass;
-    private Cargo _cargo;
+    protected double _cargoMaxMass;
+    protected Cargo? _cargo ;
+    private ContainerType _type;
+    public static int ContainerNumber = 0;
 
-    public ShipContainer(double height, double ownMass, double depth, double maxMass,
+    public ShipContainer(double height, double ownMass, double depth, double cargoMaxMass,
         ContainerType type)
     {
         _height = height;
         _ownMass = ownMass;
         _depth = depth;
         _serialNumber = SerialNumberGenerator.GenerateSerialCode(type);
-        _maxMass = maxMass;
+        _cargoMaxMass = cargoMaxMass;
+        _type = type;
     }
     
-    public void SetCargo(Cargo cargo)
+    public virtual void SetCargo(Cargo cargo)
     {
+        if (cargo.GetMass() > _cargoMaxMass)
+        {
+            throw new OverfillException("Cargo too heavy for container");
+        }
         _cargo = cargo;
     }
     
     public Cargo GetCargo()
     {
-        return _cargo;
+        return _cargo ?? throw new NoCargoException("No cargo in container");
     }
-    
-    public void RemoveCargo()
+
+    public double GetCargoMass()
+    {
+        return _cargo?.GetMass() ?? 0;
+    }
+
+    public virtual void RemoveCargo()
     {
         _cargo = null;
     }
     
+    public double GetOwnMass()
+    {
+        return _ownMass;
+    }
+    
+    public double GetCargoMaxMass()
+    {
+        return _cargoMaxMass;
+    }
+    
     override public string ToString()
     {
-        return "Container " + _serialNumber;
+        return "Container " + _serialNumber + " of type " + _type + " with cargo " + (_cargo != null ? _cargo.ToString() : "No cargo");
     }
 }
